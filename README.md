@@ -60,7 +60,7 @@ A modern, fully responsive, role-based hotel booking system. Build with the **ME
 | **Frontend** | React.js, Vite, Tailwind CSS, React Router DOM |
 | **Backend** | Node.js, Express.js |
 | **Database** | MongoDB Atlas, Mongoose |
-| **Authentication**| Clerk (OAuth, Email/Password, Webhooks) |
+| **Authentication**| Google OAuth (`@react-oauth/google` & JWT) |
 | **Payments** | Stripe API & Webhooks |
 | **Media Storage** | Cloudinary, Multer |
 | **Email Service** | Brevo (formerly Sendinblue), NodeMailer |
@@ -72,7 +72,7 @@ A modern, fully responsive, role-based hotel booking system. Build with the **ME
 
 The application follows a decoupled client-server architecture:
 1. **Client (`/client`):** Consumes RESTful APIs, handles UI state via Context API, and manages routing.
-2. **Server (`/server`):** Express API serving JSON data. Uses middleware for authentication validation (verifying Clerk tokens) and handles webhook events from Stripe and Clerk.
+2. **Server (`/server`):** Express API serving JSON data. Uses middleware for authentication validation (verifying Google ID & JWT tokens).
 
 ---
 
@@ -84,8 +84,9 @@ To run this project, you will need to add the following environment variables to
 
 | Variable | Description |
 | :--- | :--- |
-| `MONGO_DB_URI` | MongoDB Atlas connection string |
-| `CLERK_WEBHOOK_SECRET` | Secret key from Clerk Webhooks |
+| `MONGODB_URI` | MongoDB Atlas connection string |
+| `GOOGLE_CLIENT_ID` | Google OAuth Client ID |
+| `JWT_SECRET` | Secret key for backend JWT tokens |
 | `CLOUDINARY_CLOUD_NAME`| Your Cloudinary Cloud Name |
 | `CLOUDINARY_API_KEY` | Your Cloudinary API Key |
 | `CLOUDINARY_API_SECRET`| Your Cloudinary API Secret |
@@ -100,7 +101,7 @@ To run this project, you will need to add the following environment variables to
 | Variable | Description |
 | :--- | :--- |
 | `VITE_BACKEND_URL` | URL of your Express API (e.g., `http://localhost:3000`) |
-| `VITE_CLERK_PUBLISHABLE_KEY` | Public key from Clerk dashboard |
+| `VITE_GOOGLE_CLIENT_ID` | Client ID from Google Cloud Console |
 | `VITE_CURRENCY` | Currency symbol (e.g., `$`) |
 
 ---
