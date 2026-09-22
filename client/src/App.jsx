@@ -13,15 +13,20 @@ import Layout from "./pages/hotelOwner/Layout.jsx"
 import Dashboard from "./pages/hotelOwner/Dashboard.jsx"
 import AddRoom from "./pages/hotelOwner/AddRoom.jsx"
 import ListRoom from "./pages/hotelOwner/ListRoom.jsx"
+import {Toaster} from 'react-hot-toast';
+import {useAppContext} from './context/AppContext.jsx';
 
 const App = () => {
 
   const isOwnerPath = useLocation().pathname.includes("owner");   /* It checks whether URL contains "Owner" and stores result as boolean (true or false) */
 
+  const {showHotelReg} = useAppContext();
+
   return (
     <div>
+      <Toaster/>
       {!isOwnerPath && <Navbar />}
-      {false && <HotelReg />}
+      {showHotelReg && <HotelReg />}
       <div className='min-h-[70vh]'>    {/* vh means viewport height and 70vh means 70% of total height od user's browser */}
         <Routes>
           <Route path='/' element={<Home />} />
