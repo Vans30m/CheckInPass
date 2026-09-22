@@ -1,14 +1,15 @@
 import React, { useContext } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { assets } from "../assets/assets.js";
-import { useNavigate } from "react-router-dom";
-import {AuthContext} from "../context/Auth.jsx"
+import { AuthContext } from "../context/Auth.jsx"
+import { useAppContext } from "../context/AppContext.jsx"
 
 const Navbar = () => {
 
-    const {user, logout} = useContext(AuthContext);
-    const navigate = useNavigate();
-    
+    const { logout } = useContext(AuthContext);
+    const location = useLocation();
+    const { user, navigate, isOwner, setShowHotelReg } = useAppContext();
+
     const navLinks = [
         { name: 'Home', path: '/' },
         { name: 'Hotels', path: '/rooms' },
@@ -44,9 +45,13 @@ const Navbar = () => {
                         <div className={`${isScrolled ? "bg-gray-700" : "bg-white"} h-0.5 w-0 group-hover:w-full transition-all duration-300`} />
                     </a>
                 ))}
-                <button className={`border px-4 py-1 text-sm font-light rounded-full cursor-pointer ${isScrolled ? 'text-black' : 'text-white'} transition-all`}>
-                    Dashboard
-                </button>
+                {user && (
+                    <button className={`border px-4 py-1 text-sm font-light rounded-full cursor-pointer ${isScrolled ? 'text-black' : 'text-white'} transition-all`}
+                        onClick={() => isOwner ? navigate('owner') : setShowHotelReg(true)}
+                    >
+                        {isOwner ? 'Dashboard' : 'Register Hotel'}
+                    </button>
+                )}
             </div>
 
             {/* Desktop Right */}
@@ -55,13 +60,13 @@ const Navbar = () => {
                     alt="search"        /* if image is not displayed text comes */
                     className={`${isScrolled && "invert"} 
                     h-7 transition-all duration-500`}
-                    
-                    />
+
+                />
                 {user ? (
                     <div className="relative ml-4">
-                        <img 
-                            src={user.picture} 
-                            alt={user.name} 
+                        <img
+                            src={user.picture}
+                            alt={user.name}
                             referrerPolicy="no-referrer"
                             className="h-9 w-9 rounded-full border border-gray-300 cursor-pointer hover:opacity-90 transition-all focus:outline-none"
                             onClick={() => setShowDropdown(!showDropdown)}
@@ -69,7 +74,7 @@ const Navbar = () => {
                         {/* Simple Dropdown */}
                         {showDropdown && (
                             <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50 text-gray-800 text-left">
-                                <button 
+                                <button
                                     onClick={() => {
                                         setShowDropdown(false);
                                         navigate('/my-bookings');
@@ -78,7 +83,7 @@ const Navbar = () => {
                                 >
                                     My Bookings
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => {
                                         setShowDropdown(false);
                                         logout();
@@ -91,7 +96,7 @@ const Navbar = () => {
                         )}
                     </div>
                 ) : (
-                    <button 
+                    <button
                         onClick={() => navigate('/login')}
                         className={`cursor-pointer px-8 py-2.5 rounded-full ml-4 transition-all duration-500 ${isScrolled ? "text-white bg-black" : "bg-white text-black"}`}
                     >
@@ -103,7 +108,7 @@ const Navbar = () => {
             {/* Mobile Menu Button */}
             <div className="flex items-center gap-3 md:hidden">
                 <img onClick={() => setIsMenuOpen(!isMenuOpen)} /* Listens for a click event on image */
-                src={assets.menuIcon} alt="menu" className={`${isScrolled && "invert"} h-4`} />
+                    src={assets.menuIcon} alt="menu" className={`${isScrolled && "invert"} h-4`} />
             </div>
 
             {/* Mobile Menu */}
@@ -118,22 +123,24 @@ const Navbar = () => {
                     </a>
                 ))}
 
-                <button className="border px-4 py-1 text-sm font-light rounded-full cursor-pointer transition-all">
-                    Dashboard
+                <button className="border px-4 py-1 text-sm font-light rounded-full cursor-pointer transition-all"
+                    onClick={() => isOwner ? navigate('owner') : setShowHotelReg(true)}
+                >
+                    {isOwner ? 'Dashboard' : 'Register Hotel'}
                 </button>
 
                 {user ? (
                     <div className="flex flex-col items-center gap-4">
                         <div className="flex items-center gap-2">
-                            <img 
-                                src={user.picture} 
-                                alt={user.name} 
+                            <img
+                                src={user.picture}
+                                alt={user.name}
                                 referrerPolicy="no-referrer"
                                 className="h-10 w-10 rounded-full border border-gray-300"
                             />
                             <span className="text-gray-800 font-medium">{user.name}</span>
                         </div>
-                        <button 
+                        <button
                             onClick={() => {
                                 setIsMenuOpen(false);
                                 navigate('/my-bookings');
@@ -142,18 +149,18 @@ const Navbar = () => {
                         >
                             My Bookings
                         </button>
-                        <button 
+                        <button
                             onClick={() => {
                                 logout();
                                 setIsMenuOpen(false);
-                            }} 
+                            }}
                             className="cursor-pointer bg-red-600 text-white px-8 py-2.5 rounded-full transition-all duration-500"
                         >
                             Logout
                         </button>
                     </div>
                 ) : (
-                    <button 
+                    <button
                         onClick={() => {
                             navigate('/login');
                             setIsMenuOpen(false);
