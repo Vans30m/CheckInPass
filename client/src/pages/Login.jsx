@@ -8,13 +8,56 @@ const Login = () => {
     const { login } = useContext(AuthContext);
     const navigate = useNavigate();
 
-    const handleSuccess = (credentialResponse) => {
-        // Decode the JWT token to extract user info (name, email, picture, etc.)
-        const decoded = jwtDecode(credentialResponse.credential);
-        login(decoded);
-        navigate('/'); // Redirect to Home page after successful login
+    const handleSuccess = async (credentialResponse) => {
+        try {
+            const token = credentialResponse.credential;
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+
+            const response = await fetch(`${backendUrl}/api/user/google-auth`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ token }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                login(data.user, data.token);
+                navigate('/');
+            } else {
+                console.warn('Backend verification failed, using local Google profile:', data.message);
+                const decoded = jwtDecode(token);
+                login(decoded, token);
+                navigate('/');
+            }
+        } catch (error) {
+            console.error('Error during Google authentication API call:', error);
+            // Fallback to client-side decoded profile if server is unavailable
+            try {
+                const decoded = jwtDecode(credentialResponse.credential);
+                login(decoded, credentialResponse.credential);
+                navigate('/');
+            } catch (err) {
+                console.error('Failed to decode credential:', err);
+            }
+        }
     };
 
+
+
+
+
+
+
+
+
+
+
+
+
+    
     const handleError = () => {
         console.error('Google Sign In Failed');
     };
