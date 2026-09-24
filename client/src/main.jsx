@@ -4,12 +4,15 @@ import App from "./App.jsx"
 import {BrowserRouter} from "react-router-dom"    /* Standard Routing Package for react -> Used to manage navigation, pages, URLs */
 import { GoogleOAuthProvider } from '@react-oauth/google';  /* Used to render the application under the context of the Google OAuth provider */
 import { AuthProvider } from "./context/Auth.jsx"
+import { AppProvider } from "./context/AppContext.jsx";
 
 createRoot(document.getElementById('root')).render(
   <BrowserRouter>
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}> 
       <AuthProvider>
-        <App />
+        <AppProvider>
+          <App />
+        </AppProvider>
       </AuthProvider>
     </GoogleOAuthProvider>
   </BrowserRouter>,
