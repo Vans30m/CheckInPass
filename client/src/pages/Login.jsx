@@ -45,19 +45,6 @@ const Login = () => {
         }
     };
 
-
-
-
-
-
-
-
-
-
-
-
-
-    
     const handleError = () => {
         console.error('Google Sign In Failed');
     };
