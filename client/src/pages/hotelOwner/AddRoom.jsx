@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
 import Title from '../../components/Title'
 import { useAppContext } from '../../context/AppContext';
-import assets from '../../assets/assets';
+import { assets } from '../../assets/assets';
 import { toast } from 'react-hot-toast'
 
 const AddRoom = () => {
 
-  // const {axios, getToken} = useAppContext();
+  const { axios, token } = useAppContext();
 
   {/* initializes a two state variable(images , imputs)  */ }
   const [images, setImages] = useState({
@@ -30,63 +30,60 @@ const AddRoom = () => {
     }
   })
 
-  // const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // const onSubmitHandler = async(e) => {
-  //   e.preventDefault();
-  //   if(!inputs.roomType || !inputs.pricePerNight || !inputs.amenities || !Object.values(images).some(image => image)) {
-  //     toast.error('Please fill in all the fields');
-  //     return;
-  //   };
-  //   setLoading(true);
+  const onSubmitHandler = async(e) => {
+    e.preventDefault();
+    if(!inputs.roomType || !inputs.pricePerNight || !Object.values(images).some(image => image)) {
+      toast.error('Please fill in all required fields and upload at least one image');
+      return;
+    };
+    setLoading(true);
 
-  //   try {
-  //     const formData = new FormData();
-  //     formData.append('roomType', inputs.roomType);
-  //     formData.append('pricePerNight', inputs.pricePerNight);
+    try {
+      const formData = new FormData();
+      formData.append('roomType', inputs.roomType);
+      formData.append('pricePerNight', inputs.pricePerNight);
 
-  //     const amenities = Object.keys(inputs.amenities).filter(key => inputs.amenities[key]);
-  //     formData.append('amenities', JSON.stringify(amenities));
+      const amenities = Object.keys(inputs.amenities).filter(key => inputs.amenities[key]);
+      formData.append('amenities', JSON.stringify(amenities));
 
-  //     formData.append('hotel_id', getToken());
+      Object.keys(images).forEach((key) => {
+        if (images[key]) {
+          formData.append('images', images[key]);
+        }
+      });
 
-  //     Object.keys(images).forEach((key) => {
-  //       formData.append('images', images[key]);
-  //     });
+      const { data } = await axios.post('/api/rooms', formData, { headers: { Authorization: `Bearer ${token}` } });
 
-  // const {data} = await axios.post('/api/rooms/', formData, {header: {Authorization: `Bearer ${await getToken()}`}})
-  // if(data.success){
-  //   toast.success(data.message);
-  //   setInputs({
-  //     roomtType: '',
-  //     pricePerNight: 0,
-  //     amenities: {
-  //       'Free Wifi': false,
-  //       'Free Breakfast': false, 
-  //       'Room Service': false,
-  //       'Mountain View': false,
-  //       'Pool Access': false
-  //     }
-  //   })
-  //   setImages({
-  //     1: null,
-  //     2: null,
-  //     3: null,
-  //     4: null
-  //   })
-  // }
-  //   else{
-  //     toast.error(data.message);
-  //   }
-
-  //   } catch (error) {
-  // toast.error(error.message);
-  // }
-  // finally{
-  //   setLoading(false);
-  // }
-  //   }
-  // }
+      if (data.success) {
+        toast.success(data.message);
+        setInputs({
+          roomType: '',
+          pricePerNight: 0,
+          amenities: {
+            'Free Wifi': false,
+            'Free Breakfast': false, 
+            'Room Service': false,
+            'Mountain View': false,
+            'Pool Access': false
+          }
+        });
+        setImages({
+          1: null,
+          2: null,
+          3: null,
+          4: null
+        });
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <form onSubmit={onSubmitHandler} >
