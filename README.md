@@ -112,5 +112,83 @@ Follow these steps to set up the project locally on your machine.
 
 **1. Clone the repository**
 ```bash
-git clone [https://github.com/yourusername/hotel-booking.git](https://github.com/yourusername/hotel-booking.git)
+git clone https://github.com/yourusername/hotel-booking.git
 cd hotel-booking
+```
+
+**2. Install dependencies (monorepo)**
+```bash
+npm run install:all
+```
+Or manually:
+```bash
+npm install
+cd server && npm install
+cd ../client && npm install
+```
+
+**3. Configure environment variables**
+
+Create `server/.env`:
+```env
+MONGODB_URI=your_mongodb_atlas_connection_string
+GOOGLE_CLIENT_ID=your_google_oauth_client_id
+JWT_SECRET=your_super_secret_jwt_key_min_32_chars
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+STRIPE_SECRET_KEY=your_stripe_secret_key
+STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
+SMTP_USER=your_brevo_smtp_login
+SMTP_PASS=your_brevo_smtp_password
+SENDER_EMAIL=your_verified_sender_email
+```
+
+Create `client/.env`:
+```env
+VITE_BACKEND_URL=http://localhost:3000
+VITE_GOOGLE_CLIENT_ID=your_google_oauth_client_id
+VITE_CURRENCY=$
+```
+
+**4. Run development servers**
+```bash
+# From root (runs both client & server)
+npm run dev
+
+# Or separately:
+# Terminal 1: cd server && npm run dev
+# Terminal 2: cd client && npm run dev
+```
+
+**5. Access the app**
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:3000
+- Health check: http://localhost:3000/health
+
+---
+
+## Deployment (Vercel)
+
+**Backend:** Deploy `server/` as a Vercel Node.js function. Set all `server/.env` variables in Vercel dashboard.
+
+**Frontend:** Deploy `client/` as a Vercel Vite project. Set `VITE_BACKEND_URL` to your deployed backend URL.
+
+Root `vercel.json` routes API requests to the backend function.
+
+---
+
+## 📜 License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+* [MongoDB Atlas](https://www.mongodb.com/atlas) for database hosting
+* [Cloudinary](https://cloudinary.com/) for image management
+* [Brevo](https://www.brevo.com/) for transactional emails
+* [Stripe](https://stripe.com/) for payment processing
+* [Vercel](https://vercel.com/) for deployment
+* [React](https://react.dev/), [Vite](https://vitejs.dev/), [Tailwind CSS](https://tailwindcss.com/)

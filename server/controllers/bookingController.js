@@ -120,19 +120,17 @@ export const getHotelBookings = async (req, res) => {
 export const markBookingAsPaid = async (req, res) => {
     try {
         const { bookingId } = req.body;
-        const booking = await Booking.findById(bookingId);
+        const booking = await Booking.findById(bookingId).populate('user hotel');
         if (!booking) {
             return res.json({ success: false, message: "Booking not found" });
         }
 
-        {/* update booking data in db */ }
         booking.isPaid = true;
         booking.status = "confirmed";
         await booking.save();
 
         res.json({ success: true, message: "Payment successful!" });
         try {
-            {/* send confirmation email to user via nodemailer */ }
             await transporter.sendMail({
                 from: process.env.SENDER_EMAIL,
                 to: booking.user.email,
