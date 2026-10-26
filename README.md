@@ -50,9 +50,9 @@
 
 **Target Audience:** Independent hotel owners, B&B operators, and travelers seeking direct, commission-free room bookings.
 
-**Architecture Paradigm:** Monorepo with a clear client–server separation:
-- `client/` → React SPA (Vite + Tailwind CSS v4)
-- `server/` → Express REST API (Node.js + Mongoose ODM)
+**Architecture Paradigm:** Monorepo with a clear frontend–backend separation:
+- `frontend/` → React SPA (Vite + Tailwind CSS v4)
+- `backend/` → Express REST API (Node.js + Mongoose ODM)
 
 ---
 
