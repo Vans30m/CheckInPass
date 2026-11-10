@@ -2,14 +2,14 @@
     "version": 2,
     "builds": [
         {
-            "src": "backend/server.js",
+            "src": "checkinpass-web/backend/server.js",
             "use": "@vercel/node"
         }
     ],
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "backend/server.js"
+            "dest": "checkinpass-web/backend/server.js"
         }
     ]
 }

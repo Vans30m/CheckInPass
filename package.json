@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
-    "build": "cd frontend && npm run build",
-    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\"",
-    "start": "cd backend && npm start"
+    "test": "cd checkinpass-web/backend && npm test",
+    "install:all": "npm install && cd checkinpass-web/backend && npm install && cd ../frontend && npm install",
+    "build": "cd checkinpass-web/frontend && npm run build",
+    "dev": "concurrently \"cd checkinpass-web/backend && npm run dev\" \"cd checkinpass-web/frontend && npm run dev\"",
+    "start": "cd checkinpass-web/backend && npm start"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

@@ -1,25 +1,13 @@
-import express from "express"
 import "dotenv/config";
-import cors from "cors";
 import rateLimit from "express-rate-limit";
 import connectDB from "./config/db.js";
-import userRouter from "./routes/userRoutes.js";
-import hotelRouter from "./routes/hotelRoutes.js";
 import connectCloudinary from "./config/cloudinary.js";
-import roomRouter from "./routes/roomRoutes.js";
-import bookingRouter from "./routes/bookingRoutes.js";
+import { createApp } from "./app.js";
 
 connectDB();
 connectCloudinary();
 
-const app = express()
-app.use(express.json());
-
-const allowedOrigins = process.env.FRONTEND_URL?.split(',') || ['http://localhost:5173'];
-app.use(cors({
-    origin: allowedOrigins,
-    credentials: true
-}));
+const app = createApp();
 
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -40,15 +28,10 @@ const authLimiter = rateLimit({
 app.use('/api/', apiLimiter);
 app.use('/api/user/google-auth', authLimiter);
 
-app.get('/', (req, res) => res.send("API is working correctly"));
-app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
-app.use('/api/user', userRouter);
-app.use('/api/hotels',hotelRouter);
-app.use('/api/rooms', roomRouter);
-app.use('/api/bookings', bookingRouter);
-
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-    console.log(`Server running on PORT: ${PORT}`)
+    console.log(`Server running on PORT: ${PORT}`);
 });
+
+export default app;

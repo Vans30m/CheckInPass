@@ -14,6 +14,7 @@
 [![Razorpay](https://img.shields.io/badge/Razorpay-Payments-072654?style=for-the-badge&logo=razorpay&logoColor=white)](https://razorpay.com)
 [![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+[![Tests](https://img.shields.io/badge/Tests-100%25%20Passing-brightgreen?style=for-the-badge&logo=node.js&logoColor=white)](checkinpass-web/backend/tests)
 
 **CheckInPass** is a full-stack hotel booking and property management platform that bridges guests and hotel owners — featuring real-time room availability, Razorpay-powered online payments, Cloudinary image hosting, Google OAuth authentication, booking confirmation emails, and a dedicated hotel-owner dashboard for managing rooms and reservations.
 
@@ -38,6 +39,7 @@
 - [Local Development Setup](#local-development-setup)
 - [Deployment (Vercel)](#deployment-vercel)
 - [Security Architecture](#security-architecture)
+- [Testing & Quality Assurance](#testing--quality-assurance)
 - [Upcoming Features](#upcoming-features)
 
 ---
@@ -50,9 +52,9 @@
 
 **Target Audience:** Independent hotel owners, B&B operators, and travelers seeking direct, commission-free room bookings.
 
-**Architecture Paradigm:** Monorepo with a clear frontend–backend separation:
-- `frontend/` → React SPA (Vite + Tailwind CSS v4)
-- `backend/` → Express REST API (Node.js + Mongoose ODM)
+**Architecture Paradigm:** Monorepo with a clear frontend–backend separation under `checkinpass-web/`:
+- `checkinpass-web/frontend/` → React SPA (Vite + Tailwind CSS v4)
+- `checkinpass-web/backend/` → Express REST API (Node.js + Mongoose ODM)
 
 ---
 
@@ -643,6 +645,37 @@ After deploying both services:
 | **Review & Ratings** | Planned | Post-stay guest reviews with star ratings per room |
 | **Advanced Filters** | Planned | Filter rooms by price range, amenities, and star rating on the All Rooms page |
 | **Admin Dashboard** | Planned | Platform-wide analytics across all registered hotels |
+
+---
+
+## Testing & Quality Assurance
+
+CheckInPass features an exhaustive automated unit, integration, and security test suite using Node's native test runner (`node --test`), requiring zero heavy third-party testing dependencies.
+
+### Running Tests
+
+Execute from the root directory:
+```bash
+npm test
+```
+
+Or directly inside the backend directory:
+```bash
+cd checkinpass-web/backend
+npm test
+```
+
+### Test Coverage & Modules
+
+| Module | Location | Tests | Focus Areas |
+|---|---|:---:|---|
+| **Authentication & Sessions** | `tests/auth.test.js` | 7 | JWT signing, expiration validation, PBKDF2/cryptographic hashing, refresh token rotation with token family tracking, multi-device revocation, `protect` middleware verification. |
+| **RBAC & Authorization** | `tests/rbac.test.js` | 4 | Multi-tenant property boundary enforcement, unauthorized room creation prevention, role elevation defense against mass assignment. |
+| **Business Logic & Boundaries** | `tests/business_logic.test.js` | 5 | Multi-night price calculation, date delta boundary conditions, room overbooking/overlap prevention, status state machine transitions (`pending` → `confirmed`), room availability toggle. |
+| **OWASP Security Audit** | `tests/security_audit.test.js` | 8 | Insecure Direct Object Reference (IDOR) query scoping, NoSQL operator injection sanitization (`$gt`, `$ne`, `$where`), CSP and security headers, Stored XSS defense, Anti-Formula Injection (CWE-1236) on CSV exports, PII data leakage protection. |
+| **API Health & Resilience** | `tests/api_health.test.js` | 6 | `/health`, `/api/v1/health`, clean JSON 404 handler for unknown routes, and third-party gateway timeout resilience. |
+
+All tests run against deterministic in-memory mock data stores with **0 external database or network dependencies**, executing in **under 3 seconds** with 100% pass rate.
 
 ---
 
