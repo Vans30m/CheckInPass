@@ -18,7 +18,7 @@
 
 **CheckInPass** is a full-stack hotel booking and property management platform that bridges guests and hotel owners — featuring real-time room availability, Razorpay-powered online payments, Cloudinary image hosting, Google OAuth authentication, booking confirmation emails, and a dedicated hotel-owner dashboard for managing rooms and reservations.
 
-[Live Demo](https://checkinpass.vercel.app) · [Report a Bug](https://github.com/Vans30m/CheckInPass/issues)
+[Live Demo](checkinpass.onrender.com) · [Report a Bug](https://github.com/Vans30m/CheckInPass/issues)
 
 </div>
 
