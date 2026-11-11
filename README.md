@@ -11,12 +11,11 @@
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://mongodb.com)
 [![Mongoose](https://img.shields.io/badge/Mongoose-9.x-880000?style=for-the-badge&logo=mongoose&logoColor=white)](https://mongoosejs.com)
 [![Cloudinary](https://img.shields.io/badge/Cloudinary-Image_CDN-3448C5?style=for-the-badge&logo=cloudinary&logoColor=white)](https://cloudinary.com)
-[![Razorpay](https://img.shields.io/badge/Razorpay-Payments-072654?style=for-the-badge&logo=razorpay&logoColor=white)](https://razorpay.com)
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com)
+[![Deployed on Render](https://img.shields.io/badge/Deployed%20on-Render-46E3B7?style=for-the-badge&logo=render&logoColor=black)](https://render.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 [![Tests](https://img.shields.io/badge/Tests-100%25%20Passing-brightgreen?style=for-the-badge&logo=node.js&logoColor=white)](checkinpass-web/backend/tests)
 
-**CheckInPass** is a full-stack hotel booking and property management platform that bridges guests and hotel owners — featuring real-time room availability, Razorpay-powered online payments, Cloudinary image hosting, Google OAuth authentication, booking confirmation emails, and a dedicated hotel-owner dashboard for managing rooms and reservations.
+**CheckInPass** is a full-stack hotel booking and property management platform that bridges guests and hotel owners — featuring real-time room availability, seamless booking confirmation with automated email receipts, Cloudinary image hosting, Google OAuth authentication, and a dedicated hotel-owner dashboard for managing rooms and reservations.
 
 [Live Demo](https://checkinpass.onrender.com/) · [Report a Bug](https://github.com/Vans30m/CheckInPass/issues)
 
@@ -33,7 +32,7 @@
 - [Database Schema](#database-schema)
 - [API Reference](#api-reference)
 - [Authentication Flow](#authentication-flow)
-- [Payment Flow (Razorpay)](#payment-flow-razorpay)
+- [Booking & Payment Confirmation Flow](#booking--payment-confirmation-flow)
 - [Image Upload Flow (Cloudinary)](#image-upload-flow-cloudinary)
 - [Environment Configuration](#environment-configuration)
 - [Local Development Setup](#local-development-setup)
@@ -89,10 +88,9 @@
 |   MongoDB Atlas   |      |   External Services       |
 |   (Mongoose ODM)  |      |                           |
 |   4 Collections:  |      |  Cloudinary  (Images)     |
-|   User · Hotel    |      |  Razorpay    (Payments)   |
-|   Room · Booking  |      |  Nodemailer  (Email)      |
-+-------------------+      |  Google OAuth 2.0         |
-                           +---------------------------+
+|   User · Hotel    |      |  Nodemailer  (Email)      |
+|   Room · Booking  |      |  Google OAuth 2.0         |
++-------------------+      +---------------------------+
 ```
 
 ---
@@ -137,14 +135,13 @@
 | MongoDB Atlas | Hosted cluster | Primary document database |
 | Mongoose | `^9.9.5` | Schema definition, validation, relationships |
 
-### Payments & External APIs
+### External APIs & Integrations
 
 | Service | Role |
 |---|---|
-| **Razorpay** | INR payment gateway — order creation, webhook verification, UPI / Card / Netbanking |
 | **Cloudinary** | Room image CDN — upload, resize, optimize |
 | **Google OAuth 2.0** | Passwordless authentication |
-| **Nodemailer / SMTP** | Booking confirmation & notification emails |
+| **Nodemailer / SMTP** | Booking confirmation & notification emails (Brevo SMTP) |
 
 ### DevOps & Deployment
 
@@ -271,7 +268,7 @@ An individual bookable room within a hotel.
 |---|---|---|
 | `hotel` | `String` ref `Hotel` | Parent hotel reference |
 | `roomType` | `String` | e.g. `"Single"`, `"Deluxe"`, `"Suite"` |
-| `pricePerNight` | `String` | Nightly rate (INR for Razorpay flows) |
+| `pricePerNight` | `String` | Nightly room rate |
 | `amenities` | `Array` | Feature list (WiFi, AC, Pool, etc.) |
 | `images` | `[String]` | Cloudinary secure URLs (up to 4) |
 | `isAvailable` | `Boolean` | Toggle availability; default `true` |
@@ -291,7 +288,7 @@ A reservation record linking guest, room, and hotel.
 | `guest` | `Number` | Number of guests |
 | `status` | `String` enum | `"pending"` (default), `"confirmed"`, `"cancelled"` |
 | `paymentMethod` | `String` enum | `"Pay at Hotel"` (default), `"UPI"`, `"Card"` |
-| `isPaid` | `Boolean` | Set `true` after Razorpay success; default `false` |
+| `isPaid` | `Boolean` | Payment status; updated on mark-paid / confirmation; default `false` |
 | `createdAt` / `updatedAt` | `Date` | Auto-managed timestamps |
 
 ### Entity Relationship Overview
@@ -395,39 +392,30 @@ CheckInPass uses **Google OAuth 2.0** as the sole authentication provider — no
 
 ---
 
-## Payment Flow (Razorpay)
+## Booking & Payment Confirmation Flow
 
-CheckInPass integrates **Razorpay** for secure online payments (UPI, Cards, Netbanking).
+CheckInPass provides a streamlined booking lifecycle with instant status updates and automated email confirmations:
 
 ```
-1. Guest selects "Pay Online" on the booking confirmation page
+1. Guest selects dates and creates a booking
+   +-- Frontend: POST /api/bookings/book { room, checkInDate, checkOutDate, guests }
+   +-- Backend validates availability, calculates total price, and creates pending booking record
 
-2. Frontend: POST /api/bookings/book
-   +-- receives { bookingId, totalPrice }
+2. Booking Payment Confirmation
+   +-- Frontend: POST /api/bookings/pay { bookingId }
+   +-- Backend updates booking:
+       +-- booking.isPaid = true
+       +-- booking.status = "confirmed"
+       +-- booking.save()
 
-3. Backend: Creates Razorpay order
-   +-- razorpay.orders.create({ amount: totalPrice * 100, currency: "INR" })
-   +-- Returns { orderId, amount, currency, key }
+3. Transactional Email Dispatch (Brevo / Nodemailer)
+   +-- Backend dispatches a formatted booking confirmation email:
+       +-- Booking ID, Hotel Name, Address, Check-In/Out dates, Total Price
 
-4. Frontend: Opens Razorpay checkout modal
-   +-- On payment success: receives { razorpay_payment_id, razorpay_order_id, razorpay_signature }
-
-5. Frontend: POST /api/bookings/pay { bookingId, paymentId, orderId, signature }
-
-6. Backend:
-   +-- Verifies HMAC-SHA256 signature:
-   |   crypto.createHmac("sha256", RAZORPAY_SECRET)
-   |     .update(`${orderId}|${paymentId}`).digest("hex") === signature
-   +-- booking.isPaid = true, booking.status = "confirmed"
-   +-- booking.paymentMethod = "UPI" / "Card"
-   +-- booking.save()
-   +-- Sends booking confirmation email via Nodemailer
-
-7. Frontend: Shows success toast and redirects to /my-bookings
+4. User Dashboard & Hotel Owner Analytics
+   +-- Guest views confirmed booking with 'Paid' badge under My Bookings
+   +-- Hotel Owner dashboard updates total revenue and bookings in real-time
 ```
-
-> **Supported methods:** UPI, Credit/Debit Cards, Net Banking, Wallets (as enabled in your Razorpay dashboard)  
-> **Test mode:** Use `rzp_test_*` credentials during development; never commit live keys to source control.
 
 ---
 
@@ -465,8 +453,6 @@ Images are served via Cloudinary's global CDN with automatic WebP/AVIF optimizat
 | `CLOUDINARY_CLOUD_NAME` | Required | Cloudinary cloud name | `dxxxxxxxx` |
 | `CLOUDINARY_API_KEY` | Required | Cloudinary API key | `123456789012345` |
 | `CLOUDINARY_API_SECRET` | Required | Cloudinary API secret | `xxxxxxxxxxxxxxxxxxxxxxxxx` |
-| `RAZORPAY_KEY_ID` | Required | Razorpay Key ID (from Razorpay dashboard) | `rzp_live_xxxxxxxxxx` |
-| `RAZORPAY_KEY_SECRET` | Required | Razorpay Key Secret (for HMAC signature verification) | `xxxxxxxxxxxxxxxxxxxxxxxxx` |
 | `SENDER_EMAIL` | Required | From-address for booking confirmation emails | `noreply@checkinpass.com` |
 | `SMTP_HOST` | Required | SMTP server host | `smtp.gmail.com` |
 | `SMTP_PORT` | Required | SMTP port | `465` |
@@ -481,8 +467,7 @@ Images are served via Cloudinary's global CDN with automatic WebP/AVIF optimizat
 |---|---|---|---|
 | `VITE_BACKEND_URL` | Required | Backend base URL — no trailing slash | `https://checkinpass.vercel.app` |
 | `VITE_GOOGLE_CLIENT_ID` | Required | Google OAuth Client ID (same as backend) | `<id>.apps.googleusercontent.com` |
-| `VITE_RAZORPAY_KEY_ID` | Required | Razorpay Key ID (public — safe to expose) | `rzp_live_xxxxxxxxxx` |
-| `VITE_CURRENCY` | Optional | Currency symbol for price display (default: `$`) | `Rs.` |
+| `VITE_CURRENCY` | Optional | Currency symbol for price display (default: `$`) | `$` |
 
 ---
 
@@ -494,7 +479,6 @@ Images are served via Cloudinary's global CDN with automatic WebP/AVIF optimizat
 - **npm** `10.x` or later (bundled with Node)
 - **MongoDB Atlas** account — free tier at [mongodb.com/atlas](https://mongodb.com/atlas)
 - **Cloudinary** account — free tier at [cloudinary.com](https://cloudinary.com)
-- **Razorpay** account — test mode at [razorpay.com](https://razorpay.com)
 - **Google Cloud** project with OAuth 2.0 credentials configured
 
 ### Step 1 — Clone the Repository
@@ -527,8 +511,6 @@ GOOGLE_CLIENT_ID=<your-google-client-id>.apps.googleusercontent.com
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
-RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxx
-RAZORPAY_KEY_SECRET=your_razorpay_test_secret
 SENDER_EMAIL=your@gmail.com
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=465
@@ -546,8 +528,7 @@ cd ../client
 ```env
 VITE_BACKEND_URL=http://localhost:3000
 VITE_GOOGLE_CLIENT_ID=<your-client-id>.apps.googleusercontent.com
-VITE_RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxx
-VITE_CURRENCY=Rs.
+VITE_CURRENCY=$
 ```
 
 ### Step 5 — Run the Full Stack
@@ -628,7 +609,6 @@ After deploying both services:
 | **Auth Rate Limit** | `express-rate-limit` | 10 attempts / 15 min per IP on `/api/user/google-auth` |
 | **JWT Authentication** | `jsonwebtoken` | 30-day access tokens; `{ userId }` payload; verified on every protected route |
 | **Google Token Verification** | `google-auth-library` | Server-side `OAuth2Client.verifyIdToken()` — prevents token forgery |
-| **Razorpay Signature Verification** | `crypto.createHmac('sha256', secret)` | HMAC-SHA256 over `orderId|paymentId` — prevents payment spoofing |
 | **CORS** | Strict origin allowlist | `localhost:5173` (dev) + `FRONTEND_URL` env var; all others blocked |
 | **Image Validation** | Multer field limits | Max 4 files per upload; processed in memory only, never written to disk |
 | **Input Validation** | Mongoose schema enums | `role`, `status`, `paymentMethod` restricted to known enum values |
@@ -640,8 +620,8 @@ After deploying both services:
 
 | Feature | Status | Description |
 |---|---|---|
-| **Experience Page** | In Progress | Curated travel experiences — day trips, city tours, adventure activities; browsable by destination and category; bookable with Razorpay |
-| **Razorpay Webhooks** | In Progress | Server-side `payment.captured` event listener — auto-confirms bookings even if the browser closes during payment |
+| **Online Payment Gateway** | Planned | Integration with payment providers (Razorpay / Stripe) for automated checkout |
+| **Experience Page** | In Progress | Curated travel experiences — day trips, city tours, adventure activities; browsable by destination and category |
 | **Review & Ratings** | Planned | Post-stay guest reviews with star ratings per room |
 | **Advanced Filters** | Planned | Filter rooms by price range, amenities, and star rating on the All Rooms page |
 | **Admin Dashboard** | Planned | Platform-wide analytics across all registered hotels |
@@ -685,14 +665,8 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 ---
 
-## Disclaimer
-
-**For demonstration purposes.** Payment flows use Razorpay test credentials by default. Do not process real transactions without switching to live Razorpay credentials and completing KYC verification on your Razorpay account.
-
----
-
 <div align="center">
 
-Built with love by **Vans30m** — [Live App](https://checkinpass.vercel.app)
+Built with love by **Vans30m** — [Live App](https://checkinpass.onrender.com/)
 
 </div>
