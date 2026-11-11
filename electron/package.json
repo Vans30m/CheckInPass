@@ -7,12 +7,17 @@
     "start": "electron .",
     "build:win": "electron-builder --win"
   },
-  "keywords": ["electron", "checkinpass", "hotel-management"],
+  "keywords": [
+    "electron",
+    "checkinpass",
+    "hotel-management"
+  ],
   "author": "Vansh Thakur",
   "license": "MIT",
   "devDependencies": {
     "electron": "^34.0.0",
-    "electron-builder": "^25.1.8"
+    "electron-builder": "^25.1.8",
+    "png-to-ico": "^3.0.2"
   },
   "build": {
     "appId": "com.checkinpass.desktop",
@@ -21,14 +26,19 @@
       "output": "dist"
     },
     "win": {
+      "icon": "icon.ico",
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         },
         {
           "target": "portable",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ]
     },
@@ -40,4 +50,3 @@
     }
   }
 }
-

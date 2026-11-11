@@ -14,6 +14,7 @@ function createWindow() {
     minWidth: 1024,
     minHeight: 700,
     title: 'CheckInPass - Hotel Management & Booking',
+    icon: path.join(__dirname, 'icon.ico'),
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
