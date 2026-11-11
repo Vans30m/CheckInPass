@@ -1,6 +1,6 @@
-# CheckInPass
-
 <div align="center">
+
+# CheckInPass
 
 ### Hotel Booking & Management Platform
 
