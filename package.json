@@ -6,6 +6,8 @@
     "test": "cd checkinpass-web/backend && npm test",
     "install:all": "npm install && cd checkinpass-web/backend && npm install && cd ../frontend && npm install",
     "build": "cd checkinpass-web/frontend && npm run build",
+    "electron:dev": "cd electron && npm start",
+    "electron:build": "npm run build && cd electron && npm run build:win",
     "dev": "concurrently \"cd checkinpass-web/backend && npm run dev\" \"cd checkinpass-web/frontend && npm run dev\"",
     "start": "cd checkinpass-web/backend && npm start"
   },
